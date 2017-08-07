@@ -29,7 +29,7 @@ step = {
     },
 }
 
-servos.display_ik(servos.ik(yaw=-0))
+servos.display_ik(servos.ik(yaw=0.1))
 
 #print servos.body_ik(0, 0, 0, 0, 0, 0);
 #print servos.body_ik(0, 0, 0, 0, 0.1, 0);

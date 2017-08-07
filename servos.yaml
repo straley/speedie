@@ -7,6 +7,7 @@
                 'max': 120,
                 'center': 5,
                 'range': 190,
+                'default': -90,
             },
             'knee': {
                 'channel': 13,
@@ -14,6 +15,7 @@
                 'max': 180,
                 'center': 150,
                 'range': 180,
+                'default': -180,
             },
             'hip': {
                 'channel': 12,
@@ -21,6 +23,7 @@
                 'max': 160,
                 'center': 105,
                 'range': 170,
+                'default': 0,
             }
         },
         'front-left': {
@@ -30,6 +33,7 @@
                 'max': 660,
                 'center': 12,
                 'range': 190,
+                'default': -90,
             },
             'knee': {
                 'channel': 1,
@@ -37,6 +41,7 @@
                 'max': 480,
                 'center': 140,
                 'range': 165,
+                'default': -180,
             },
             'hip': {
                 'channel': 2,
@@ -44,6 +49,7 @@
                 'max': 520,
                 'center': 130,
                 'range': 185,
+                'default': 0,
             }
         },
         'rear-right': {
@@ -53,6 +59,7 @@
                 'max': 640,
                 'center': 2,
                 'range': 195,
+                'default': -90,
             },
             'knee': {
                 'channel': 9,
@@ -60,6 +67,7 @@
                 'max': 680,
                 'center': 145,
                 'range': 170,
+                'default': -180,
             },
             'hip': {
                 'channel': 7,
@@ -67,6 +75,7 @@
                 'max': 660,
                 'center': 110,
                 'range': 185,
+                'default': -180,
             }
         },
         'rear-left': {
@@ -76,6 +85,7 @@
                 'max': 150,
                 'center': 10,
                 'range': 180,
+                'default': -90,
             },
             'knee': {
                 'channel': 5,
@@ -83,6 +93,7 @@
                 'max': 220,
                 'center': 140,
                 'range': 180,
+                'default': -180,
             },
             'hip': {
                 'channel': 6,
@@ -90,6 +101,7 @@
                 'max': 160,
                 'center': 150,
                 'range': 180,
+                'default': -180,
             }
         }
     },

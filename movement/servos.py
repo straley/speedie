@@ -107,7 +107,7 @@ class Servos(object):
                 error = True
                 break
 
-            ankle = math.pi / 2 - math.acos( _ankle_f )
+            ankle = math.acos( _ankle_f ) + math.radians(self.servos[leg]['ankle']['default'])
 
             _knee_n = _tibia_length * _tibia_length - _femur_length * _femur_length - iksw * iksw
             _knee_d = 2 * _femur_length * iksw
@@ -117,9 +117,10 @@ class Servos(object):
                 error = True
                 break
 
-            knee = math.pi / 2 - math.atan(femur_foot_distance / ik_z) + math.acos(_knee_f)
+            knee =  math.atan(femur_foot_distance / ik_z) + math.acos(_knee_f) + math.radians(self.servos[leg]['knee']['default'])
+            hip = math.atan2(ik_y, ik_x) + math.radians(self.servos[leg]['hip']['default'])
 
-            hip = math.atan2(ik_y, ik_x)
+
 
             ik[leg] = {
                 'x': ik_x + self.offsets[leg]['x'],
@@ -139,20 +140,20 @@ class Servos(object):
     def display_ik(self, ik):
         if ik:
             info = {
-                8: 'REAR RIGHT                                        REAR LEFT',
-                9: ('HIP  : ' + repr(round(math.degrees(ik['rear-right']['hip']),0))).ljust(50) + \
-                    'HIP  : ' + repr(round(math.degrees(ik['rear-left']['hip']),0)),
-                10: ('KNEE : ' + repr(round(math.degrees(ik['rear-right']['knee']),0))).ljust(50) + \
-                    'KNEE : ' + repr(round(math.degrees(ik['rear-left']['knee']),0)),
-                11: ('ANKLE: ' + repr(round(math.degrees(ik['rear-right']['ankle']),0))).ljust(50) + \
-                    'ANKLE: ' + repr(round(math.degrees(ik['rear-left']['ankle']),0)),
-                28: 'FRONT RIGHT                                       FRONT LEFT',
-                29: ('HIP  : ' + repr(round(math.degrees(ik['front-right']['hip']),0))).ljust(50) + \
+                8: 'REAR LEFT                                         FRONT LEFT',
+                9: ('HIP  : ' + repr(round(math.degrees(ik['rear-left']['hip']),0))).ljust(50) + \
                     'HIP  : ' + repr(round(math.degrees(ik['front-left']['hip']),0)),
-                30: ('KNEE : ' + repr(round(math.degrees(ik['front-right']['knee']),0))).ljust(50) + \
+                10: ('KNEE : ' + repr(round(math.degrees(ik['rear-left']['knee']),0))).ljust(50) + \
                     'KNEE : ' + repr(round(math.degrees(ik['front-left']['knee']),0)),
-                31: ('ANKLE: ' + repr(round(math.degrees(ik['front-right']['ankle']),0))).ljust(50) + \
+                11: ('ANKLE: ' + repr(round(math.degrees(ik['rear-left']['ankle']),0))).ljust(50) + \
                     'ANKLE: ' + repr(round(math.degrees(ik['front-left']['ankle']),0)),
+                28: 'REAR RIGHT                                        FRONT RIGHT',
+                29: ('HIP  : ' + repr(round(math.degrees(ik['rear-right']['hip']),0))).ljust(50) + \
+                    'HIP  : ' + repr(round(math.degrees(ik['front-right']['hip']),0)),
+                30: ('KNEE : ' + repr(round(math.degrees(ik['rear-right']['knee']),0))).ljust(50) + \
+                    'KNEE : ' + repr(round(math.degrees(ik['front-right']['knee']),0)),
+                31: ('ANKLE: ' + repr(round(math.degrees(ik['rear-right']['ankle']),0))).ljust(50) + \
+                    'ANKLE: ' + repr(round(math.degrees(ik['front-right']['ankle']),0)),
             }
 
             grid = [['.']*100 for _ in range(40)]
