@@ -94,9 +94,48 @@
         }
     },
     'bones': {
-        'tibia': 45,
-        'femur': 65,
+        'tibia': 47,
+        'femur': 58,
         'coxa': 48,
-        'center': 146,
+    },
+    'offsets': {
+        'front-right': {
+            'x': 108,
+            'y': 98,
+        },
+        'front-left': {
+            'x': 108,
+            'y': -98,
+        },
+        'rear-right': {
+            'x': -108,
+            'y': 98,
+        },
+        'rear-left': {
+            'x': -108,
+            'y': -98,
+        },
+    },
+    'feet': {
+        'front-right': {
+            'x': 214,
+            'y': 98,
+            'z': 47,
+        },
+        'front-left': {
+            'x': 214,
+            'y': -98,
+            'z': 47,
+        },
+        'rear-right': {
+            'x': -214,
+            'y': 98,
+            'z': 47,
+        },
+        'rear-left': {
+            'x': -214,
+            'y': -98,
+            'z': 47,
+        },
     }
 }
