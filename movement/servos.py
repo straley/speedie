@@ -1,12 +1,16 @@
 import math
-import Adafruit_PCA9685
+try:
+    import Adafruit_PCA9685
+except ImportError:
+    from utils.mockpwm import MockPWM as Adafruit_PCA9685
 
 class Servos(object):
-
     def __init__(self, config):
         self.freq = config['controller']['frequency'] if 'controller' in config and 'frequency' in config['controller'] else 120
         self.address = config['controller']['address'] if 'controller' in config and 'address' in config['controller'] else 0x40
+
         self.pwm = Adafruit_PCA9685.PCA9685(address=self.address)
+
         self.servos = config['servos']
         self.bones = config['bones']            # length of bones
         self.offsets = config['offsets']        # distance from center of mass
