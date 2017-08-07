@@ -116,6 +116,12 @@ class Servos(object):
             len_a = math.sqrt(body_x * body_x + body_y * body_y) - self.bones['coxa']
             len_b = math.sqrt(len_a * len_a + body_z * body_z)
             coxa = math.atan2(body_x, body_y)
+            print ( \
+                    ( self.bones['femur'] * self.bones['femur'] ) - \
+                    ( self.bones['tibia'] * self.bones['tibia'] ) + \
+                    ( len_b * len_b )
+                ) / ( 2 * self.bones['femur'] * len_b )
+            print body_z, len_a
             femur = math.acos( ( \
                 ( self.bones['femur'] * self.bones['femur'] ) - \
                 ( self.bones['tibia'] * self.bones['tibia'] ) + \
