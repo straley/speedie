@@ -29,8 +29,10 @@ step = {
     },
 }
 
-x = servos.body_ik( step, -0.1 );
-print x
+servos.display_ik(servos.ik(yaw=-0))
+
+#print servos.body_ik(0, 0, 0, 0, 0, 0);
+#print servos.body_ik(0, 0, 0, 0, 0.1, 0);
 
 #servos.move('rear-left', 'hip', 90);
 #servos.move('rear-right', 'hip', 90);

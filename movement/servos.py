@@ -1,4 +1,7 @@
+from __future__ import print_function
 import math
+import string
+
 try:
     import Adafruit_PCA9685
 except ImportError:
@@ -72,67 +75,112 @@ class Servos(object):
                 self.move(leg, joint, self.servos[leg][joint]['center']);
 
 
-    #def body_ik(self, x, y, z, delta_x, delta_y, yaw):
-    def body_ik(self, step, yaw):
-
-        cos_roll = math.cos(self.axes['roll'])
-        sin_roll = math.sin(self.axes['roll'])
-        cos_pitch = math.cos(self.axes['pitch'])
-        sin_pitch = math.sin(self.axes['pitch'])
-        cos_yaw = math.cos(self.axes['yaw'] + yaw)
-        sin_yaw = math.sin(self.axes['yaw'] + yaw)
-
+    def ik(self, dx=0, dy=0, dz=0, yaw=0, pitch=0, roll=0):
+        _tibia_length = self.bones['tibia']
+        _femur_length = self.bones['femur']
+        _coxa_length = self.bones['coxa']
 
         ik = {}
+        error = False
 
         for leg in ['front-right', 'front-left', 'rear-right', 'rear-left']:
-            x = self.feet[leg]['x'] + step[leg]['x']
-            y = self.feet[leg]['y'] + step[leg]['y']
-            z = self.feet[leg]['z'] + step[leg]['z']
+            x = self.feet[leg]['x'] + dx
+            y = self.feet[leg]['y'] + dy
+            distality = math.sqrt(x*x + y*y)
+            angle_x = (math.pi / 2) - math.atan2(y, x)
 
-            target_x = x + self.offsets[leg]['x'] + self.position['x']
-            target_y = y + self.offsets[leg]['y'] + self.position['y']
-            target_z = z + self.position['z']
+            ik_x = self.feet[leg]['x'] - self.offsets[leg]['x'] + dx + (math.sin(angle_x + yaw) * distality) - x
+            ik_y = self.feet[leg]['y'] - self.offsets[leg]['y']  + dy + (math.cos(angle_x + yaw) * distality) - y
+            ik_z = self.feet[leg]['z'] + dz + (math.tan(pitch) * x)  + (math.tan(roll) * y)
 
-            body_x =  self.position['x'] + target_x - \
-                     ( target_x * cos_pitch * cos_yaw ) - \
-                     ( target_y * sin_roll * sin_pitch * cos_yaw ) - \
-                     ( target_z * cos_roll * sin_pitch * cos_yaw ) + \
-                     ( target_y * cos_roll * sin_yaw) - \
-                     ( target_z * sin_roll * sin_yaw)
+            # will this ever change?  ==sqrt(feetx2 + feety2)
+            coxa_foot_dist = math.sqrt( ik_x * ik_x + ik_y * ik_y )
+            femur_foot_distance = coxa_foot_dist - _coxa_length
 
-            body_y = self.position['y'] + target_y - \
-                     ( target_x * cos_pitch * sin_yaw ) - \
-                     ( target_y * sin_roll * sin_pitch * sin_yaw) - \
-                     ( target_z * cos_roll * sin_pitch * sin_yaw) - \
-                     ( target_y * cos_roll * cos_yaw ) + \
-                     ( target_z * sin_roll * cos_yaw )
+            iksw = math.sqrt( femur_foot_distance * femur_foot_distance + ik_z * ik_z )
 
-            body_z =  self.position['z'] + target_z + \
-                     ( target_x * sin_pitch ) - \
-                     ( target_y * sin_roll * cos_pitch) - \
-                     ( target_z * cos_roll * cos_pitch)
+            _ankle_n = iksw * iksw - _tibia_length * _tibia_length - _femur_length * _femur_length
+            _ankle_d = 2 * _femur_length * _tibia_length
+            _ankle_f = _ankle_n / _ankle_d
 
-            len_a = math.sqrt(body_x * body_x + body_y * body_y) - self.bones['coxa']
-            len_b = math.sqrt(len_a * len_a + body_z * body_z)
-            coxa = math.atan2(body_x, body_y)
-            print ( \
-                    ( self.bones['femur'] * self.bones['femur'] ) - \
-                    ( self.bones['tibia'] * self.bones['tibia'] ) + \
-                    ( len_b * len_b )
-                ) / ( 2 * self.bones['femur'] * len_b )
-            print body_z, len_a
-            femur = math.acos( ( \
-                ( self.bones['femur'] * self.bones['femur'] ) - \
-                ( self.bones['tibia'] * self.bones['tibia'] ) + \
-                ( len_b * len_b )
-            ) / ( 2 * self.bones['femur'] * len_b ) ) - math.atan2(body_z, len_a)
+            if abs(_ankle_f) > 1:
+                error = True
+                break
+
+            ankle = math.pi / 2 - math.acos( _ankle_f )
+
+            _knee_n = _tibia_length * _tibia_length - _femur_length * _femur_length - iksw * iksw
+            _knee_d = 2 * _femur_length * iksw
+            _knee_f = _knee_n / _knee_d
+
+            if abs(_knee_f) > 1:
+                error = True
+                break
+
+            knee = math.pi / 2 - math.atan(femur_foot_distance / ik_z) + math.acos(_knee_f)
+
+            hip = math.atan2(ik_y, ik_x)
 
             ik[leg] = {
-                'coxa': coxa,
-                'femur': femur,
-                'len_a': len_a,
-                'len_b': len_b
+                'x': ik_x + self.offsets[leg]['x'],
+                'y': ik_y + self.offsets[leg]['y'],
+                'z': ik_z,
+                'ankle': ankle,
+                'knee': knee,
+                'hip': hip
             }
 
-        return ik
+        if error:
+            return False
+        else:
+            return ik
+
+
+    def display_ik(self, ik):
+        if ik:
+            info = {
+                8: 'REAR RIGHT                                        REAR LEFT',
+                9: ('HIP  : ' + repr(round(math.degrees(ik['rear-right']['hip']),0))).ljust(50) + \
+                    'HIP  : ' + repr(round(math.degrees(ik['rear-left']['hip']),0)),
+                10: ('KNEE : ' + repr(round(math.degrees(ik['rear-right']['knee']),0))).ljust(50) + \
+                    'KNEE : ' + repr(round(math.degrees(ik['rear-left']['knee']),0)),
+                11: ('ANKLE: ' + repr(round(math.degrees(ik['rear-right']['ankle']),0))).ljust(50) + \
+                    'ANKLE: ' + repr(round(math.degrees(ik['rear-left']['ankle']),0)),
+                28: 'FRONT RIGHT                                       FRONT LEFT',
+                29: ('HIP  : ' + repr(round(math.degrees(ik['front-right']['hip']),0))).ljust(50) + \
+                    'HIP  : ' + repr(round(math.degrees(ik['front-left']['hip']),0)),
+                30: ('KNEE : ' + repr(round(math.degrees(ik['front-right']['knee']),0))).ljust(50) + \
+                    'KNEE : ' + repr(round(math.degrees(ik['front-left']['knee']),0)),
+                31: ('ANKLE: ' + repr(round(math.degrees(ik['front-right']['ankle']),0))).ljust(50) + \
+                    'ANKLE: ' + repr(round(math.degrees(ik['front-left']['ankle']),0)),
+            }
+
+            grid = [['.']*100 for _ in range(40)]
+
+            for leg in ['front-right', 'front-left', 'rear-right', 'rear-left']:
+                x = int(round((self.feet[leg]['x']),0) / 10) + 50
+                y = int(round((self.feet[leg]['y']),0) / 10) + 20
+                grid[y][x] = "*"
+
+                x = int(round((ik[leg]['x']),0) / 10) + 50
+                y = int(round((ik[leg]['y']),0) / 10) + 20
+                z = int(round((ik[leg]['z']),0) / 10) + 20
+                if z<24:
+                    grid[y][x] = string.lowercase[:26][int((z - 24)/10)]
+                else:
+                    grid[y][x] = string.uppercase[:26][int((z - 24)/10)]
+
+
+            n = 0
+            for r in grid:
+                for c in r:
+                    print(c, end='')
+
+                if n in info:
+                    print('          ' + info[n])
+                else:
+                    print('')
+
+                n = n + 1
+        else:
+            print("OUT OF BOUNDS")
