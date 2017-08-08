@@ -29,6 +29,13 @@ class Servos(object):
             'z': 0
         }
 
+    def sleep(self):
+        try:
+            import Adafruit_GPIO.I2C as I2C
+            I2C.get_i2c_device(0x00).writeRaw8(0x06)
+        except:
+            print("[i2c] not available")
+
     def move(self, leg, joint, degrees):
         if not self.servos[leg] or not self.servos[leg][joint]:
             return false
@@ -90,8 +97,11 @@ class Servos(object):
                     self.move(leg, joint, int(setting_or_value * self.servos[leg][joint]['range']))
 
 
-    def center(self, leg=False, joint=False):
-        self.use('center', leg, joint)
+    def home(self, leg=False, joint=False):
+        self.use('home', leg, joint)
+
+    def stand(self, leg=False, joint=False):
+        self.use('stand', leg, joint)
 
     def min(self, leg=False, joint=False):
         self.use(0, leg, joint)
@@ -154,8 +164,8 @@ class Servos(object):
                 'x': ik_x + self.offsets[leg]['x'],
                 'y': ik_y + self.offsets[leg]['y'],
                 'z': ik_z,
-                'ankle': ankle,
-                'knee': knee,
+                'knee': ankle,
+                'ankle': - (math.radians(12) - knee),
                 'hip': hip
             }
 
