@@ -36,8 +36,8 @@ class Servos(object):
         freqratio = self.freq / 60
 
         servo = self.servos[leg][joint]
-        min = servo['min']
-        max = servo['max']
+        min = servo['min'] * freqratio
+        max = servo['max'] * freqratio
         range = math.radians(servo['range'])
         channel = servo['channel']
         position = math.radians(degrees)
@@ -54,11 +54,18 @@ class Servos(object):
             position = range - position
 
         percent_of_range = position / range
-        target = int ( ( ( ( max - min ) * percent_of_range ) + min ) * freqratio )
+
+        print ("max, min", max, min)
+        target = int ( ( ( ( max - min ) * percent_of_range ) + min ) )
+        print ("target", target)
         self.pwm.set_pwm(channel, 0, target)
 
 
-    def center(self, leg=False, joint=False):
+    # if setting_or_value is a string, it uses that setting
+    # if it is an int, it uses that as it's degrees
+    # if it is a float, it uses that a a percentage of range
+
+    def use(self, setting_or_value, leg=False, joint=False):
         if not leg:
             legs = ['front-right', 'front-left', 'rear-right', 'rear-left']
         else:
@@ -69,10 +76,31 @@ class Servos(object):
         else:
             joints = [joint]
 
+        if isinstance(setting_or_value, basestring):
+            for leg in legs:
+                for joint in joints:
+                    self.move(leg, joint, self.servos[leg][joint][setting_or_value])
+        elif isinstance(setting_or_value, int):
+            for leg in legs:
+                for joint in joints:
+                    self.move(leg, joint, setting_or_value)
+        elif isinstance(setting_or_value, float):
+            for leg in legs:
+                for joint in joints:
+                    self.move(leg, joint, int(setting_or_value * self.servos[leg][joint]['range']))
 
-        for leg in legs:
-            for joint in joints:
-                self.move(leg, joint, self.servos[leg][joint]['center']);
+
+    def center(self, leg=False, joint=False):
+        self.use('center', leg, joint)
+
+    def min(self, leg=False, joint=False):
+        self.use(0, leg, joint)
+
+    def max(self, leg=False, joint=False):
+        self.use('range', leg, joint)
+
+    def mid(self, leg=False, joint=False):
+        self.use(0.5, leg, joint)
 
 
     def ik(self, dx=0, dy=0, dz=0, yaw=0, pitch=0, roll=0):
