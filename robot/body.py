@@ -1,8 +1,3 @@
-from pyax12.connection import Connection
-import time
-
-connection = Connection(port='/dev/ttyACM0', baudrate=1000000)
-
 class Joint(object):
     def __init__(self, id, inverted=False, min=-150, max=150, speed=False, connection=False):
         self.id = id
@@ -51,7 +46,7 @@ class Ankle(Joint):
 
 class Knee(Joint):
     def __init__(self, id, inverted=False, speed=False, connection=False):
-        super(Knee, self).__init__(id=id, inverted=inverted, min=-95, max=95, speed=speed, connection=connection)
+        super(Knee, self).__init__(id=id, inverted=not inverted, min=-95, max=95, speed=speed, connection=connection)
 
 class Hip(Joint):
     def __init__(self, id, inverted=False, speed=False, connection=False):
@@ -103,60 +98,3 @@ class Legs(object):
             self.right = Group([self.fr, self.rr])
             self.front = Group([self.fl, self.fr])
             self.rear = Group([self.rl, self.rr])
-
-legs = Legs(connection=connection, speed=150, start_id=2)
-
-
-speed = 300
-for i in range(0, 100):
-    legs.fl.knee.goto(-35)
-    legs.fl.ankle.goto(30)
-    time.sleep(0.4)
-    legs.fl.knee.goto(-15)
-    legs.fl.ankle.goto(95)
-    time.sleep(0.4)
-    speed += 1
-    legs.all.speed(speed)
-
-
-# movement_speed = 300
-# sc.goto(4, 95, movement_speed, True)
-
-"""
-# stand
-sc.goto(2, -60, movement_speed, True)
-sc.goto(3, 60, movement_speed, True)
-sc.goto(4, -30, movement_speed, True)
-
-sc.goto(5, 60, movement_speed, True)
-sc.goto(6, -60, movement_speed, True)
-sc.goto(7, 30, movement_speed, True)
-
-sc.goto(8, -60, movement_speed, True)
-sc.goto(9, 60, movement_speed, True)
-sc.goto(10, -30, movement_speed, True)
-
-sc.goto(11, 60, movement_speed, True)
-sc.goto(12, -60, movement_speed, True)
-sc.goto(13, 30, movement_speed, True)
-
-# wait
-time.sleep(3)
-
-# rest
-sc.goto(2, 45, movement_speed, True)
-sc.goto(3, 90, movement_speed, True)
-sc.goto(4, -90, movement_speed, True)
-
-sc.goto(5, -45, movement_speed, True)
-sc.goto(6, -90, movement_speed, True)
-sc.goto(7, 90, movement_speed, True)
-
-sc.goto(8, 45, movement_speed, True)
-sc.goto(9, 90, movement_speed, True)
-sc.goto(10, -90, movement_speed, True)
-
-sc.goto(11, -45, movement_speed, True)
-sc.goto(12, -90, movement_speed, True)
-sc.goto(13, 90, movement_speed, True)
-"""
