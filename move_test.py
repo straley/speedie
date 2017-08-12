@@ -16,12 +16,14 @@ class Joint(object):
         self._speed = value
 
     def goto(self, position, speed=False):
-        if self.inverted:
-            position = -position
         if position < self.min:
             position = self.min
         elif position > self.max:
             position = self.max
+
+        if self.inverted:
+            position = -position
+
 
         if speed == False and self._speed != False:
             speed = self._speed
@@ -94,19 +96,27 @@ class Legs(object):
         if clockwise:
             self.fl = Leg(start_id=start_id, speed=speed, connection=connection)
             self.fr = Leg(start_id=start_id+3, speed=speed, inverted=True, connection=connection)
-            self.rl = Leg(start_id=start_id+(3*2), speed=speed, connection=connection)
-            self.rr = Leg(start_id=start_id+(3*3), speed=speed, inverted=True, connection=connection)
+            self.rr = Leg(start_id=start_id+(3*2), speed=speed, connection=connection)
+            self.rl = Leg(start_id=start_id+(3*3), speed=speed, inverted=True, connection=connection)
             self.all = Group([self.fl, self.fr, self.rl, self.rr])
             self.left = Group([self.fl, self.rl])
             self.right = Group([self.fr, self.rr])
             self.front = Group([self.fl, self.fr])
             self.rear = Group([self.rl, self.rr])
 
-legs = Legs(connection=connection, speed=100, start_id=2)
+legs = Legs(connection=connection, speed=150, start_id=2)
 
 
-legs.all.knee.goto(25)
-
+speed = 300
+for i in range(0, 100):
+    legs.fl.knee.goto(-35)
+    legs.fl.ankle.goto(30)
+    time.sleep(0.4)
+    legs.fl.knee.goto(-15)
+    legs.fl.ankle.goto(95)
+    time.sleep(0.4)
+    speed += 1
+    legs.all.speed(speed)
 
 
 # movement_speed = 300
