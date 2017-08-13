@@ -2,49 +2,75 @@ import time
 from pyax12.connection import Connection
 
 class Robot(object):
-    def __init__(self, speed=150, port='/dev/ttyACM0', baudrate=1000000, start_id=2):
+    def __init__(self, speed=150, port='/dev/ttyACM0', baudrate=1000000, start_id=2, debug=False):
         self.speed = speed
         self.connection = Connection(port=port, baudrate=baudrate)
         self.legs = Legs(connection=self.connection, speed=self.speed, start_id=start_id)
+        self.debug = debug
+        self.connection.flush()
+        if (self.debug):
+            print("[debug] connected to port", port, "at", baudrate, baudrate)
+
+    def reset(self):
+        if (self.debug):
+            print("[debug] scanning")
+        self.connection.scan()
+
+        if (self.debug):
+            print("[debug] ready")
+
+
+    def close(self):
+        self.connection.close()
+        if (self.debug):
+            print("[debug] closed")
 
     def stand(self):
+        if (self.debug):
+            print("[debug] stand")
         self.legs.all.hip.goto(45)
         self.legs.all.knee.goto(-60)
         self.legs.all.ankle.goto(-30)
 
     def kneel(self):
+        if (self.debug):
+            print("[debug] kneel")
         self.legs.all.hip.goto(-45)
         self.legs.all.knee.goto(-90)
         self.legs.all.ankle.goto(-90)
 
     def flat(self):
+        if (self.debug):
+            print("[debug] flat")
         self.legs.all.hip.goto(90)
         self.legs.all.knee.goto(0)
         self.legs.all.ankle.goto(0)
 
     def walk(self, steps=1, direction="forward"):
+        if (self.debug):
+            print("[debug] walk", direction, steps, "steps")
         walk = Walk(self)
 
         if direction == "forward":
-            for i in range(0,steps):
-                walk.step_vertical(["fl", "rr"], "down")
-                walk.step_horizontal("fl", "rl", "backward")
-                walk.step_horizontal("rr", "fl", "forward")
-                walk.step_vertical(["fl", "rr"], "up")
-                walk.step_vertical(["fr", "rl"], "down")
-                walk.step_horizontal("fr", "rr", "backward")
-                walk.step_horizontal("rl", "fr", "forward")
-                walk.step_vertical(["fr", "rl"], "up")
+            flrl = "forward"
+            rrfl = "forward"
+            frrr = "forward"
+            rlfr = "forward"
         elif direction == "backward":
-            for i in range(0,steps):
-                walk.step_vertical(["fl", "rr"], "down")
-                walk.step_horizontal("fl", "rl", "forward")
-                walk.step_horizontal("rr", "fl", "backward")
-                walk.step_vertical(["fl", "rr"], "up")
-                walk.step_vertical(["fr", "rl"], "down")
-                walk.step_horizontal("fr", "rr", "forward")
-                walk.step_horizontal("rl", "fr", "backward")
-                walk.step_vertical(["fr", "rl"], "up")
+            flrl = "backward"
+            rrfl = "backward"
+            frrr = "backward"
+            rlfr = "backward"
+
+        for i in range(0,steps):
+            walk.step_vertical(["fl", "rr"], "down")
+            walk.step_horizontal("fl", "rl", flrl)
+            walk.step_horizontal("rr", "fl", rrfl)
+            walk.step_vertical(["fl", "rr"], "up")
+            walk.step_vertical(["fr", "rl"], "down")
+            walk.step_horizontal("fr", "rr", frrr)
+            walk.step_horizontal("rl", "fr", rlfr)
+            walk.step_vertical(["fr", "rl"], "up")
 
 
 class Joint(object):
@@ -176,10 +202,13 @@ class Walk(object):
 
     def step_horizontal(self, lead_leg, trailing_leg, direction):
         if lead_leg in dir(self.robot.legs) and trailing_leg in dir(self.robot.legs):
-            if direction == "backward":
-                getattr(self.robot.legs, lead_leg).hip.goto(self.hip_center - self.hip_offset)
-                getattr(self.robot.legs, trailing_leg).hip.goto(self.hip_center)
-            elif direction == "forward":
+            if direction == "forward":
                 getattr(self.robot.legs, lead_leg).hip.goto(self.hip_center + self.hip_offset)
+                time.sleep(self.cycle_delay)
                 getattr(self.robot.legs, trailing_leg).hip.goto(self.hip_center)
-            time.sleep(self.cycle_delay)
+                time.sleep(self.cycle_delay)
+            elif direction == "backward":
+                getattr(self.robot.legs, lead_leg).hip.goto(self.hip_center - self.hip_offset)
+                time.sleep(self.cycle_delay)
+                getattr(self.robot.legs, trailing_leg).hip.goto(self.hip_center)
+                time.sleep(self.cycle_delay)
