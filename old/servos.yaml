@@ -1,0 +1,165 @@
+{
+    'servos': {
+        'front-right': {
+            'ankle': {
+                'channel': 14,
+                'min': 1000,
+                'max': 210,
+                'home': 12,
+                'stand': 90,
+                'range': 190,
+                'default': -90,
+            },
+            'knee': {
+                'channel': 13,
+                'min': 800,
+                'max': 220,
+                'home': 100,
+                'stand': 20,
+                'range': 140,
+                'default': -180,
+            },
+            'hip': {
+                'channel': 12,
+                'min': 1040,
+                'max': 300,
+                'home': 110,
+                'stand': 90,
+                'range': 160,
+                'default': 0,
+            }
+        },
+        'front-left': {
+            'ankle': {
+                'channel': 0,
+                'min': 220,
+                'max': 1020,
+                'home': 12,
+                'stand': 90,
+                'range': 180,
+                'default': -90,
+            },
+            'knee': {
+                'channel': 1,
+                'min': 220,
+                'max': 800,
+                'home': 100,
+                'stand': 20,
+                'range': 140,
+                'default': -180,
+            },
+            'hip': {
+                'channel': 2,
+                'min': 220,
+                'max': 900,
+                'home': 102,
+                'stand': 82,
+                'range': 160,
+                'default': 0,
+            }
+        },
+        'rear-right': {
+            'ankle': {
+                'channel': 11,
+                'min': 230,
+                'max': 1000,
+                'home': 2,
+                'stand': 90,
+                'range': 180,
+                'default': -90,
+            },
+            'knee': {
+                'channel': 10,
+                'min': 340,
+                'max': 1080,
+                'home': 140,
+                'stand': 40,
+                'range': 170,
+                'default': -180,
+            },
+            'hip': {
+                'channel': 7,
+                'min': 280,
+                'max': 1000,
+                'home': 105,
+                'stand': 95,
+                'range': 170,
+                'default': -180,
+            }
+        },
+        'rear-left': {
+            'ankle': {
+                'channel': 4,
+                'min': 1040,
+                'max': 240,
+                'home': 10,
+                'stand': 90,
+                'range': 185,
+                'default': -90,
+            },
+            'knee': {
+                'channel': 5,
+                'min': 1000,
+                'max': 340,
+                'home': 140,
+                'stand': 40,
+                'range': 180,
+                'default': -180,
+            },
+            'hip': {
+                'channel': 6,
+                'min': 1000,
+                'max': 280,
+                'home': 120,
+                'stand': 100,
+                'range': 170,
+                'default': -180,
+            }
+        }
+    },
+    'bones': {
+        'tibia': 47,
+        'femur': 58,
+        'coxa': 48,
+    },
+    'offsets': {
+        'front-right': {
+            'x': 108,
+            'y': 98,
+        },
+        'front-left': {
+            'x': 108,
+            'y': -98,
+        },
+        'rear-right': {
+            'x': -108,
+            'y': 98,
+        },
+        'rear-left': {
+            'x': -108,
+            'y': -98,
+        },
+    },
+    'feet': {
+        'front-right': {
+            'x': 214,
+            'y': 98,
+            'z': 47,
+        },
+        'front-left': {
+            'x': 214,
+            'y': -98,
+            'z': 47,
+        },
+        'rear-right': {
+            'x': -214,
+            'y': 98,
+            'z': 47,
+        },
+        'rear-left': {
+            'x': -214,
+            'y': -98,
+            'z': 47,
+        },
+    }
+}
