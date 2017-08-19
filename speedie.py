@@ -1,17 +1,20 @@
+import time
 from robot.robot import Robot
 
-speedie = Robot(speed=150)
-try:
-    speedie.stand()
+speedie = Robot(speed=150, debug=True)
 
-    speedie.walk(4, "forward")
-    speedie.walk(4, "backward")
+# speedie.get_status()
 
-    speedie.flat()
+for i in range(0,1000):
+    # speedie.stand()
+    speedie.get_status()
+    # time.sleep(1)
+    # speedie.get_status()
+    #speedie.kneel()
+    # time.sleep(1)
+    # speedie.get_status()
 
 
-except ValueError:
-    print("ValueError")
 
 print("closing")
 speedie.close()

@@ -1,8 +1,12 @@
 import time
 from pyax12.connection import Connection
+import pkg_resources
+
+print("pyax12 version", pkg_resources.get_distribution("pyax12").version)
 
 class Robot(object):
     def __init__(self, speed=150, port='/dev/ttyACM0', baudrate=1000000, start_id=2, debug=False):
+
         self.speed = speed
         self.connection = Connection(port=port, baudrate=baudrate)
         self.legs = Legs(connection=self.connection, speed=self.speed, start_id=start_id)
@@ -46,32 +50,53 @@ class Robot(object):
         self.legs.all.knee.goto(0)
         self.legs.all.ankle.goto(0)
 
-    def walk(self, steps=1, direction="forward"):
+    def walk(self, steps=1, direction="forward", knee_up=False):
         if (self.debug):
             print("[debug] walk", direction, steps, "steps")
-        walk = Walk(self)
 
-        if direction == "forward":
-            flrl = "forward"
-            rrfl = "forward"
-            frrr = "forward"
-            rlfr = "forward"
-        elif direction == "backward":
-            flrl = "backward"
-            rrfl = "backward"
-            frrr = "backward"
-            rlfr = "backward"
+        if knee_up == False:
+            walk = Walk(self)
+        else:
+            walk = Walk(self, knee_up=knee_up)
 
         for i in range(0,steps):
             walk.step_vertical(["fl", "rr"], "down")
-            walk.step_horizontal("fl", "rl", flrl)
-            walk.step_horizontal("rr", "fl", rrfl)
+            walk.step_horizontal("fl", "rl", direction)
+            walk.step_horizontal("rr", "fl", direction)
             walk.step_vertical(["fl", "rr"], "up")
             walk.step_vertical(["fr", "rl"], "down")
-            walk.step_horizontal("fr", "rr", frrr)
-            walk.step_horizontal("rl", "fr", rlfr)
+            walk.step_horizontal("fr", "rr", direction)
+            walk.step_horizontal("rl", "fr", direction)
             walk.step_vertical(["fr", "rl"], "up")
 
+
+    def get_status(self):
+        servos = [2,3,5,6,8,9,11,12]
+
+        min_voltage = 999
+        max_voltage = 0
+        sum_voltage = 0
+        good_count = 0
+
+        for servo in servos:
+            try:
+                if not self.connection.ping(servo):
+                    print("ping failed servo", servo)
+                    
+                voltage = self.connection.get_present_voltage(servo)
+                if voltage > max_voltage:
+                    max_voltage = voltage
+                elif voltage < min_voltage:
+                    min_voltage = voltage
+                sum_voltage += voltage
+                good_count = good_count + 1
+            except:
+                print ("[error] cannot connect to", servo)
+
+        if good_count > 0:
+            print (min_voltage, max_voltage, sum_voltage / good_count)
+        else:
+            print("no servos online")
 
 class Joint(object):
     def __init__(self, id, inverted=False, min=-150, max=150, speed=False, connection=False):
@@ -81,6 +106,9 @@ class Joint(object):
         self.max = max
         self._speed = speed
         self.connection = connection
+
+    def get_load(self):
+        return self.connection.get_present_load(self.id)
 
     def speed(self, value=False):
         self._speed = value
@@ -141,6 +169,14 @@ class Leg(object):
         self.knee.speed(value=value)
         self.ankle.speed(value=value)
 
+    def get_load(self):
+        loads = [self.hip.get_load(), self.knee.get_load()] #[self.ankle.get_load()
+        return {
+            "min": min(loads),
+            "max": max(loads),
+            "avg": sum(loads)/len(loads)
+        }
+
 class Group(object):
     def __init__(self, legs):
         self.legs = legs
@@ -176,7 +212,7 @@ class Legs(object):
 
 
 class Walk(object):
-    def __init__(self, robot, step_delay=0.1, cycle_delay=0.03, hip_center=45, hip_offset=45, knee_up=-45, knee_down=0):
+    def __init__(self, robot, step_delay=0.05, cycle_delay=0.01, hip_center=45, hip_offset=45, knee_up=-45, knee_down=0):
         self.robot = robot
         self.step_delay = step_delay
         self.cycle_delay = cycle_delay
